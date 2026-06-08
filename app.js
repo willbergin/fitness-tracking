@@ -17,6 +17,68 @@
     try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
   }
 
+  /* ===== Export / Import (Device Sync) ===== */
+  document.getElementById('btn-export-data').addEventListener('click', function () {
+    var payload = {
+      exportedAt: new Date().toISOString(),
+      runs: getStore(RUN_STORAGE_KEY),
+      strength: getStore(STRENGTH_STORAGE_KEY)
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'bergin-pft-backup-' + todayStr() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Data exported!');
+  });
+
+  document.getElementById('btn-import-data').addEventListener('click', function () {
+    document.getElementById('import-file-input').click();
+  });
+
+  document.getElementById('import-file-input').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (evt) {
+      try {
+        var data = JSON.parse(evt.target.result);
+        if (!data.runs && !data.strength) { showToast('Invalid backup file'); return; }
+        var existingRuns = getStore(RUN_STORAGE_KEY);
+        var existingStrength = getStore(STRENGTH_STORAGE_KEY);
+        var mergeChoice = (existingRuns.length > 0 || existingStrength.length > 0)
+          ? confirm('You already have data on this device.\n\nOK = Merge (keep both)\nCancel = Replace (overwrite with imported data)')
+          : false;
+        if (mergeChoice) {
+          // Merge: combine and deduplicate by id
+          var runIds = {};
+          existingRuns.forEach(function (r) { runIds[r.id] = true; });
+          (data.runs || []).forEach(function (r) { if (!runIds[r.id]) existingRuns.push(r); });
+          setStore(RUN_STORAGE_KEY, existingRuns);
+
+          var sIds = {};
+          existingStrength.forEach(function (s) { sIds[s.id] = true; });
+          (data.strength || []).forEach(function (s) { if (!sIds[s.id]) existingStrength.push(s); });
+          setStore(STRENGTH_STORAGE_KEY, existingStrength);
+          showToast('Data merged successfully!');
+        } else {
+          // Replace
+          setStore(RUN_STORAGE_KEY, data.runs || []);
+          setStore(STRENGTH_STORAGE_KEY, data.strength || []);
+          showToast('Data imported successfully!');
+        }
+      } catch (err) {
+        showToast('Error reading file — is it a valid backup?');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
   /* ===== Toast ===== */
   function showToast(message) {
     var toast = document.getElementById('toast');

@@ -1042,3 +1042,25 @@ canvas {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Sync Controls ===== */
+.sync-controls {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.sync-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 12px;
+}
+
+.sync-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
