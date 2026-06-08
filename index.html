@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bergin PFT</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+    <!-- Mode Selection Screen -->
+    <div id="mode-select" class="mode-select">
+        <div class="mode-select-inner">
+            <h1 class="mode-select-title">Bergin PFT</h1>
+            <p class="mode-select-subtitle">Select your training mode</p>
+            <div class="mode-cards">
+                <div class="mode-card" id="mode-running">
+                    <div class="mode-card-icon">🏃</div>
+                    <div class="mode-card-label">Running</div>
+                    <div class="mode-card-desc">Marathon training, log runs, calendar &amp; stats</div>
+                </div>
+                <div class="mode-card" id="mode-strength">
+                    <div class="mode-card-icon">�️</div>
+                    <div class="mode-card-label">Strength</div>
+                    <div class="mode-card-desc">Push, Pull, Legs — log sessions &amp; track progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         RUNNING MODE
+         ============================================================ -->
+    <div id="running-app" class="app-container" style="display:none;">
+        <nav class="nav">
+            <span class="nav-logo" id="running-back-btn">← Bergin PFT</span>
+            <ul class="nav-links">
+                <li><a class="nav-link active" data-view="r-overview">Overview</a></li>
+                <li><a class="nav-link" data-view="r-plan">Plan</a></li>
+                <li><a class="nav-link" data-view="r-log">Log Run</a></li>
+                <li><a class="nav-link" data-view="r-calendar">Calendar</a></li>
+                <li><a class="nav-link" data-view="r-stats">Stats</a></li>
+            </ul>
+        </nav>
+
+        <main class="main">
+            <!-- Running Overview -->
+            <section id="view-r-overview" class="view-section active">
+                <h1 class="page-title">Overview</h1>
+                <p class="page-subtitle"></p>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-title"><svg width="24" height="16" viewBox="0 0 24 16" style="vertical-align:middle;margin-right:6px;border-radius:2px;"><rect x="0" y="0" width="8" height="16" fill="#002B7F"/><rect x="8" y="0" width="8" height="16" fill="#FCD116"/><rect x="16" y="0" width="8" height="16" fill="#CE1126"/></svg>Upcoming Race — Bucharest Marathon, 11th October 2026</div>
+                        <div class="countdown-grid">
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-days">—</span>
+                                <span class="countdown-label">Days</span>
+                            </div>
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-hours">—</span>
+                                <span class="countdown-label">Hours</span>
+                            </div>
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-minutes">—</span>
+                                <span class="countdown-label">Minutes</span>
+                            </div>
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-seconds">—</span>
+                                <span class="countdown-label">Seconds</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Target Goal Time</div>
+                        <div class="goal-time">3:45:00</div>
+                        <div class="goal-pace">Pace: 5:20–5:25/km</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Training Paces</div>
+                        <div id="paces-content"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">This Week</div>
+                        <div id="this-week-content"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Running Plan -->
+            <section id="view-r-plan" class="view-section">
+                <h1 class="page-title">Training Plan</h1>
+                <p class="page-subtitle">18-week programme for Bucharest Marathon — Target 3:45:00</p>
+                <div id="plan-content"></div>
+            </section>
+
+            <!-- Log Run -->
+            <section id="view-r-log" class="view-section">
+                <h1 class="page-title">Log Run</h1>
+                <p class="page-subtitle">Record your training runs to track progress.</p>
+                <div class="card">
+                    <form id="log-run-form" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="run-date">Date *</label>
+                            <input class="form-input" type="date" id="run-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="run-type">Run Type *</label>
+                            <select class="form-input" id="run-type" required>
+                                <option value="">— Select —</option>
+                                <option value="Easy">Easy</option>
+                                <option value="Long Run">Long Run</option>
+                                <option value="Tempo">Tempo</option>
+                                <option value="Intervals">Intervals</option>
+                                <option value="Marathon Pace">Marathon Pace</option>
+                                <option value="Hills">Hills</option>
+                                <option value="Recovery">Recovery</option>
+                                <option value="Race">Race</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="run-distance">Distance (km) *</label>
+                            <input class="form-input" type="number" id="run-distance" min="0" step="0.1" placeholder="e.g. 10.5" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pace (min:sec per km) *</label>
+                            <div class="form-row">
+                                <input class="form-input" type="number" id="run-pace-min" min="0" max="15" step="1" placeholder="min">
+                                <input class="form-input" type="number" id="run-pace-sec" min="0" max="59" step="1" placeholder="sec">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="run-notes">Notes (optional)</label>
+                            <textarea class="form-input form-textarea" id="run-notes" rows="3" placeholder="e.g. Felt strong on the hills"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Save Run</button>
+                        </div>
+                    </form>
+                </div>
+                <h2 class="section-heading">Recent Runs</h2>
+                <div id="recent-runs-list"></div>
+            </section>
+
+            <!-- Running Calendar -->
+            <section id="view-r-calendar" class="view-section">
+                <h1 class="page-title">Calendar</h1>
+                <p class="page-subtitle">Monthly view of your logged runs.</p>
+                <div class="calendar-controls">
+                    <button class="btn btn-secondary" id="r-cal-prev">&larr; Previous</button>
+                    <span class="calendar-month-label" id="r-cal-month-label"></span>
+                    <button class="btn btn-secondary" id="r-cal-next">Next &rarr;</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    <div class="calendar-day-header">Sun</div>
+                </div>
+                <div class="calendar-grid" id="r-cal-grid"></div>
+                <!-- Day Detail Modal -->
+                <div class="modal-overlay" id="r-cal-modal">
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h2 class="modal-title" id="r-cal-modal-title">—</h2>
+                            <button class="btn btn-secondary btn-sm" id="r-cal-modal-close">&times;</button>
+                        </div>
+                        <div id="r-cal-modal-body"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Running Stats -->
+            <section id="view-r-stats" class="view-section">
+                <h1 class="page-title">Stats</h1>
+                <p class="page-subtitle">Key running metrics and trends.</p>
+                <div class="stats-summary-grid" id="r-stats-summary"></div>
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-title">Weekly Running Mileage</div>
+                    <canvas id="chart-mileage" width="900" height="280"></canvas>
+                </div>
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-title">Average Pace by Week</div>
+                    <canvas id="chart-pace" width="900" height="280"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============================================================
+         STRENGTH MODE
+         ============================================================ -->
+    <div id="strength-app" class="app-container" style="display:none;">
+        <nav class="nav">
+            <span class="nav-logo" id="strength-back-btn">← Bergin PFT</span>
+            <ul class="nav-links">
+                <li><a class="nav-link active" data-view="s-overview">Overview</a></li>
+                <li><a class="nav-link" data-view="s-log">Log Session</a></li>
+                <li><a class="nav-link" data-view="s-calendar">Calendar</a></li>
+                <li><a class="nav-link" data-view="s-stats">Stats</a></li>
+            </ul>
+        </nav>
+
+        <main class="main">
+            <!-- Strength Overview -->
+            <section id="view-s-overview" class="view-section active">
+                <h1 class="page-title">Overview</h1>
+                <p class="page-subtitle">Strength training progress at a glance.</p>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-title">Sessions This Month</div>
+                        <div class="goal-time" id="s-sessions-count">0</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Goal</div>
+                        <div class="goal-time" style="font-size:24px;">45KG Dumbbell Press</div>
+                        <div class="goal-pace">Target: May 2027</div>
+                    </div>
+                </div>
+                <div class="strength-groups-grid">
+                    <div class="card strength-group-card">
+                        <div class="card-title">Push</div>
+                        <div id="s-push-list" class="exercise-list"></div>
+                    </div>
+                    <div class="card strength-group-card">
+                        <div class="card-title">Pull</div>
+                        <div id="s-pull-list" class="exercise-list"></div>
+                    </div>
+                    <div class="card strength-group-card">
+                        <div class="card-title">Legs</div>
+                        <div id="s-legs-list" class="exercise-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Log Session -->
+            <section id="view-s-log" class="view-section">
+                <h1 class="page-title">Log Session</h1>
+                <p class="page-subtitle">Record your strength training session.</p>
+                <div class="card">
+                    <form id="s-log-form" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="s-session-date">Date *</label>
+                            <input class="form-input" type="date" id="s-session-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="s-session-type">Type *</label>
+                            <select class="form-input" id="s-session-type" required>
+                                <option value="">— Select —</option>
+                                <option value="Push">Push</option>
+                                <option value="Pull">Pull</option>
+                                <option value="Legs">Legs</option>
+                            </select>
+                        </div>
+                        <div id="s-exercise-selector" style="display:none;">
+                            <div class="form-group">
+                                <label class="form-label">Select Exercises</label>
+                                <div id="s-exercise-checkboxes" class="exercise-checkboxes"></div>
+                            </div>
+                        </div>
+                        <div id="s-exercise-inputs"></div>
+                        <div class="form-group" id="s-save-group" style="display:none;">
+                            <button type="submit" class="btn btn-primary">Save Session</button>
+                        </div>
+                    </form>
+                </div>
+                <h2 class="section-heading">Recent Sessions</h2>
+                <div id="s-recent-sessions"></div>
+            </section>
+
+            <!-- Strength Calendar -->
+            <section id="view-s-calendar" class="view-section">
+                <h1 class="page-title">Calendar</h1>
+                <p class="page-subtitle">Monthly view of your strength sessions.</p>
+                <div class="calendar-controls">
+                    <button class="btn btn-secondary" id="s-cal-prev">&larr; Previous</button>
+                    <span class="calendar-month-label" id="s-cal-month-label"></span>
+                    <button class="btn btn-secondary" id="s-cal-next">Next &rarr;</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    <div class="calendar-day-header">Sun</div>
+                </div>
+                <div class="calendar-grid" id="s-cal-grid"></div>
+                <div class="modal-overlay" id="s-cal-modal">
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h2 class="modal-title" id="s-cal-modal-title">—</h2>
+                            <button class="btn btn-secondary btn-sm" id="s-cal-modal-close">&times;</button>
+                        </div>
+                        <div id="s-cal-modal-body"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Strength Stats -->
+            <section id="view-s-stats" class="view-section">
+                <h1 class="page-title">Stats</h1>
+                <p class="page-subtitle">Weight progression over time for each exercise.</p>
+
+                <h2 class="section-heading">Push</h2>
+                <div id="s-stats-push"></div>
+
+                <h2 class="section-heading">Pull</h2>
+                <div id="s-stats-pull"></div>
+
+                <h2 class="section-heading">Legs</h2>
+                <div id="s-stats-legs"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+
+</body>
+</html>
