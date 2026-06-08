@@ -79,7 +79,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card">
+                    <div class="card" style="text-align:center;">
                         <div class="card-title">Target Goal Time</div>
                         <div class="goal-time" id="goal-target-time">3:45:00</div>
                         <div class="goal-pace" id="goal-target-pace">Pace: 5:20–5:25/km</div>
@@ -102,9 +102,32 @@
 
             <!-- Running Plan -->
             <section id="view-r-plan" class="view-section">
-                <h1 class="page-title">Training Plan</h1>
-                <p class="page-subtitle">18-week programme for Bucharest Marathon — Target 3:45:00</p>
-                <div id="plan-content"></div>
+                <h1 class="page-title">Training Plans</h1>
+                <p class="page-subtitle">Choose a plan to view or create a new one.</p>
+                <div id="plan-selector">
+                    <div id="plan-buttons"></div>
+                    <button class="btn btn-secondary" id="btn-create-plan" style="margin-top:12px;">+ Create New Plan</button>
+                </div>
+                <div id="plan-content" style="display:none;"></div>
+                <button class="btn btn-secondary" id="btn-back-to-plans" style="display:none;margin-bottom:16px;">← Back to Plans</button>
+                <!-- Create Plan Form -->
+                <div id="create-plan-form" style="display:none;">
+                    <div class="card">
+                        <div class="form-group">
+                            <label class="form-label">Plan Name *</label>
+                            <input class="form-input" id="new-plan-name" placeholder="e.g. Berlin Marathon 2027">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Plan Details (free text) *</label>
+                            <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Enter your training plan in any format. Separate weeks with a blank line. Example:<br><code>Week 1 (8-14 June, ~28km):<br>Day 1: 7km Easy @ 5:35-5:50/km<br>Day 2: 7km Intervals<br>Day 3: 14km Long Run</code></p>
+                            <textarea class="form-input form-textarea" id="new-plan-text" rows="15" placeholder="Paste or type your training plan here..."></textarea>
+                        </div>
+                        <div class="form-group" style="display:flex;gap:10px;">
+                            <button class="btn btn-primary" id="btn-save-new-plan">Save Plan</button>
+                            <button class="btn btn-secondary" id="btn-cancel-new-plan">Cancel</button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Log Run -->

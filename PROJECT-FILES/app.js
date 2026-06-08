@@ -23,7 +23,8 @@
       exportedAt: new Date().toISOString(),
       runs: getStore(RUN_STORAGE_KEY),
       strength: getStore(STRENGTH_STORAGE_KEY),
-      goal: (function() { try { var g = localStorage.getItem('pft_running_goal'); return g ? JSON.parse(g) : null; } catch(e) { return null; } })()
+      goal: (function() { try { var g = localStorage.getItem('pft_running_goal'); return g ? JSON.parse(g) : null; } catch(e) { return null; } })(),
+      customPlans: (function() { try { var p = localStorage.getItem('pft_custom_plans'); return p ? JSON.parse(p) : null; } catch(e) { return null; } })()
     };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
@@ -66,12 +67,14 @@
           (data.strength || []).forEach(function (s) { if (!sIds[s.id]) existingStrength.push(s); });
           setStore(STRENGTH_STORAGE_KEY, existingStrength);
           if (data.goal) localStorage.setItem('pft_running_goal', JSON.stringify(data.goal));
+          if (data.customPlans) localStorage.setItem('pft_custom_plans', JSON.stringify(data.customPlans));
           showToast('Data merged successfully!');
         } else {
           // Replace
           setStore(RUN_STORAGE_KEY, data.runs || []);
           setStore(STRENGTH_STORAGE_KEY, data.strength || []);
           if (data.goal) localStorage.setItem('pft_running_goal', JSON.stringify(data.goal));
+          if (data.customPlans) localStorage.setItem('pft_custom_plans', JSON.stringify(data.customPlans));
           showToast('Data imported successfully!');
         }
       } catch (err) {
@@ -394,18 +397,18 @@
       title.textContent = 'Step 4 — Select Training Plan';
       var planOptions = '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">Choose a plan for your "This Week" view.</p>';
       planOptions += '<div class="form-group"><select class="form-input" id="goal-plan-select">';
-      planOptions += '<option value="0">Default Plan (18-week Bucharest)</option>';
-      if (typeof TRAINING_PLANS !== 'undefined') {
-        for (var i = 0; i < TRAINING_PLANS.length; i++) {
-          planOptions += '<option value="' + i + '">Plan ' + (i + 1) + '</option>';
-        }
+      planOptions += '<option value="0">Bucharest Marathon (default)</option>';
+      var customPlans = getCustomPlans();
+      for (var i = 0; i < customPlans.length; i++) {
+        planOptions += '<option value="custom-' + i + '">' + customPlans[i].name + '</option>';
       }
       planOptions += '</select></div>';
       planOptions += '<div class="form-group"><button class="btn btn-primary" id="goal-step4-save">🎯 Save Goal</button></div>';
       body.innerHTML = planOptions;
 
       document.getElementById('goal-step4-save').addEventListener('click', function () {
-        newGoalData.planIndex = parseInt(document.getElementById('goal-plan-select').value) || 0;
+        var val = document.getElementById('goal-plan-select').value;
+        newGoalData.planIndex = val.indexOf('custom-') === 0 ? val : parseInt(val) || 0;
         saveGoal(newGoalData);
         document.getElementById('goal-modal').classList.remove('active');
         renderGoalOverview();
@@ -414,28 +417,131 @@
     }
 
     /* Plan */
-    (function renderPlan() {
-      var container = document.getElementById('plan-content');
-      if (!container) return;
-      var currentWeek = getCurrentWeek(0);
-      TRAINING_PLAN.forEach(function (week) {
-        var isCurrent = week.week === currentWeek.week;
-        var weekBlock = document.createElement('div');
-        weekBlock.className = 'plan-week-block' + (isCurrent ? ' current' : '');
-        weekBlock.innerHTML =
-          '<div class="plan-week-header"><div class="plan-week-title">' + week.label + (isCurrent ? ' <span class="current-badge">Current</span>' : '') + '</div><div class="plan-week-meta"><span>' + week.dates + '</span><span>Volume: ' + week.volume + '</span></div></div>';
-        var daysGrid = document.createElement('div');
-        daysGrid.className = 'plan-days-grid';
-        week.days.forEach(function (d) {
-          var dayEl = document.createElement('div');
-          dayEl.className = 'plan-day-card';
-          dayEl.innerHTML = '<div class="plan-day-label">Day ' + d.day + '</div><div class="plan-day-title">' + d.title + '</div>' + (d.detail ? '<div class="plan-day-detail">' + d.detail + '</div>' : '');
-          daysGrid.appendChild(dayEl);
-        });
-        weekBlock.appendChild(daysGrid);
-        container.appendChild(weekBlock);
+    var CUSTOM_PLANS_KEY = 'pft_custom_plans';
+
+    function getCustomPlans() {
+      try { var raw = localStorage.getItem(CUSTOM_PLANS_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+      return [];
+    }
+
+    function saveCustomPlans(plans) {
+      localStorage.setItem(CUSTOM_PLANS_KEY, JSON.stringify(plans));
+    }
+
+    function renderPlanSelector() {
+      var btnContainer = document.getElementById('plan-buttons');
+      var planContent = document.getElementById('plan-content');
+      var planSelector = document.getElementById('plan-selector');
+      var backBtn = document.getElementById('btn-back-to-plans');
+      var createForm = document.getElementById('create-plan-form');
+
+      btnContainer.innerHTML = '';
+      planContent.style.display = 'none';
+      planSelector.style.display = 'block';
+      backBtn.style.display = 'none';
+      createForm.style.display = 'none';
+
+      // Default plan button
+      var defaultBtn = document.createElement('button');
+      defaultBtn.className = 'btn btn-primary';
+      defaultBtn.style.marginRight = '10px';
+      defaultBtn.style.marginBottom = '10px';
+      defaultBtn.textContent = '🏃 Bucharest Marathon';
+      defaultBtn.addEventListener('click', function () { showPlanDetail('default'); });
+      btnContainer.appendChild(defaultBtn);
+
+      // Custom plan buttons
+      var customPlans = getCustomPlans();
+      customPlans.forEach(function (plan, idx) {
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-secondary';
+        btn.style.marginRight = '10px';
+        btn.style.marginBottom = '10px';
+        btn.textContent = '📋 ' + plan.name;
+        btn.addEventListener('click', function () { showPlanDetail('custom-' + idx); });
+        btnContainer.appendChild(btn);
       });
-    })();
+    }
+
+    function showPlanDetail(planId) {
+      var planContent = document.getElementById('plan-content');
+      var planSelector = document.getElementById('plan-selector');
+      var backBtn = document.getElementById('btn-back-to-plans');
+
+      planContent.innerHTML = '';
+      planContent.style.display = 'block';
+      planSelector.style.display = 'none';
+      backBtn.style.display = 'inline-flex';
+
+      if (planId === 'default') {
+        var currentWeek = getCurrentWeek(0);
+        TRAINING_PLAN.forEach(function (week) {
+          var isCurrent = week.week === currentWeek.week;
+          var weekBlock = document.createElement('div');
+          weekBlock.className = 'plan-week-block' + (isCurrent ? ' current' : '');
+          weekBlock.innerHTML =
+            '<div class="plan-week-header"><div class="plan-week-title">' + week.label + (isCurrent ? ' <span class="current-badge">Current</span>' : '') + '</div><div class="plan-week-meta"><span>' + week.dates + '</span><span>Volume: ' + week.volume + '</span></div></div>';
+          var daysGrid = document.createElement('div');
+          daysGrid.className = 'plan-days-grid';
+          week.days.forEach(function (d) {
+            var dayEl = document.createElement('div');
+            dayEl.className = 'plan-day-card';
+            dayEl.innerHTML = '<div class="plan-day-label">Day ' + d.day + '</div><div class="plan-day-title">' + d.title + '</div>' + (d.detail ? '<div class="plan-day-detail">' + d.detail + '</div>' : '');
+            daysGrid.appendChild(dayEl);
+          });
+          weekBlock.appendChild(daysGrid);
+          planContent.appendChild(weekBlock);
+        });
+      } else {
+        // Custom plan
+        var idx = parseInt(planId.replace('custom-', ''));
+        var customPlans = getCustomPlans();
+        var plan = customPlans[idx];
+        if (!plan) return;
+        var header = document.createElement('h2');
+        header.className = 'section-heading';
+        header.textContent = plan.name;
+        planContent.appendChild(header);
+        var pre = document.createElement('div');
+        pre.className = 'card';
+        pre.style.whiteSpace = 'pre-wrap';
+        pre.style.fontFamily = 'inherit';
+        pre.style.fontSize = '14px';
+        pre.style.lineHeight = '1.8';
+        pre.style.color = 'var(--text-secondary)';
+        pre.textContent = plan.text;
+        planContent.appendChild(pre);
+      }
+    }
+
+    document.getElementById('btn-back-to-plans').addEventListener('click', function () {
+      renderPlanSelector();
+    });
+
+    document.getElementById('btn-create-plan').addEventListener('click', function () {
+      document.getElementById('plan-selector').style.display = 'none';
+      document.getElementById('create-plan-form').style.display = 'block';
+      document.getElementById('new-plan-name').value = '';
+      document.getElementById('new-plan-text').value = '';
+    });
+
+    document.getElementById('btn-cancel-new-plan').addEventListener('click', function () {
+      document.getElementById('create-plan-form').style.display = 'none';
+      document.getElementById('plan-selector').style.display = 'block';
+    });
+
+    document.getElementById('btn-save-new-plan').addEventListener('click', function () {
+      var name = document.getElementById('new-plan-name').value.trim();
+      var text = document.getElementById('new-plan-text').value.trim();
+      if (!name || !text) { showToast('Please enter a name and plan details'); return; }
+      var plans = getCustomPlans();
+      plans.push({ name: name, text: text, createdAt: new Date().toISOString() });
+      saveCustomPlans(plans);
+      showToast('Plan "' + name + '" saved!');
+      renderPlanSelector();
+    });
+
+    renderPlanSelector();
 
     /* Log Run Form */
     var logForm = document.getElementById('log-run-form');
