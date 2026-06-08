@@ -7,27 +7,25 @@ A personal hybrid fitness tracker built with vanilla HTML, CSS, and JavaScript. 
 Bergfit is a two-mode training companion:
 
 - **Running Mode** — Set any running goal (race, time trial, etc.), create custom training plans, log runs, view a calendar, and track weekly mileage and pace trends.
-- **Strength Mode** — Track Push/Pull/Legs sessions. Log exercises with weight and sets/reps, view progress over time with per-exercise weight charts.
+- **Strength Mode** — Track Push/Pull/Legs sessions. Log exercises with weight and sets/reps, view progress over time with per-exercise progress charts.
 
 Both modes store data in `localStorage`, so everything persists between sessions on the same device. Use the Export/Import feature to sync between devices.
 
 ## Key Features
 
-- **Dynamic goal system** — Set any upcoming goal with a target time, custom paces, and linked training plan
-- Race/goal countdown timer (days, hours, minutes, seconds)
-- **Multiple training plans** — Default Bucharest Marathon plan plus create/edit/delete your own custom plans via free text input
+- Running goal overview — Set any upcoming goal with a target time, custom paces, and linked training plan, with goal countdown timer
+- Training plans — Create/edit/delete your own custom plans
 - Run logging with type, distance, pace, and notes
-- Monthly calendar view with click-to-inspect day detail
-- Weekly mileage and average pace charts (canvas-based, no libraries)
+- Monthly calendar view with click-to-inspect day detail, using logged session data for running and strength sessions
+- Stats Charts - To track Weekly mileage and average pace charts, as well as weight progression per strength excercise (canvas-based, no libraries)
 - Strength session logging with multi-exercise support and multiple sets per exercise
-- Exercise weight progression charts grouped by Push/Pull/Legs
 - Export/Import data as JSON for syncing between devices (desktop ↔ mobile)
 - Responsive design — works on desktop and mobile browsers
 
 ## Project Structure
 
 ```
-fitness-tracking/
+hybrid-fitness-tracker/
 ├── PROJECT-FILES/
 │   ├── index.html    # Main app entry point
 │   ├── styles.css    # All styling (CSS custom properties, flexbox/grid layout)
