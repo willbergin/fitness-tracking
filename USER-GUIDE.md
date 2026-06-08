@@ -1,15 +1,15 @@
-# Bergin PFT — User Guide
+# Bergfit — User Guide
 
 ## Getting Started
 
-Open the app by visiting **https://willbergin.github.io/fitness-tracking/** in any browser, or double-click `index.html` if you have the files locally.
+Open the app by visiting **https://willbergin.github.io/fitness-tracking/** in any browser, or double-click `PROJECT-FILES/index.html` if you have the files locally.
 
-You'll see the home screen with two training modes to choose from:
+You'll see the home screen with two training modes:
 
-- **Running** — Marathon training tracker
-- **Strength** — Push/Pull/Legs session logger
+- **🏃 Running** — Goal-based run training, plans, logging, calendar and stats
+- **🏋️ Strength** — Push/Pull/Legs session logger and progress tracker
 
-Tap either card to enter that mode. Use the **← Bergin PFT** button in the top-left corner to return to the home screen at any time.
+Tap either card to enter that mode. Use the **← Bergfit** button in the top-left corner to return to the home screen at any time.
 
 ---
 
@@ -17,22 +17,52 @@ Tap either card to enter that mode. Use the **← Bergin PFT** button in the top
 
 ### Overview
 
-The Overview screen shows:
+The Overview screen shows your current running goal:
 
-- **Race Countdown** — Live countdown to the Bucharest Marathon (11th October 2026) in days, hours, minutes, and seconds.
-- **Target Goal Time** — 3:45:00 with target pace of 5:20–5:25/km.
-- **Training Paces** — Reference table showing the pace range for each run type (Recovery, Easy, Long Run, Marathon Pace, Tempo, Intervals).
-- **This Week** — Shows the current week's training sessions from the 18-week plan.
+- **Upcoming Goal** — Your target event/race name and date with a live countdown (days, hours, minutes, seconds).
+- **Target Goal Time** — Your target finish time for the goal.
+- **Goal Training Paces** — Reference table showing your pace ranges for each run type (customisable per goal).
+- **Goal Plan — This Week** — Shows the current week's training from your selected plan.
+- **🎯 Set New Goal** — Button at the bottom to configure a new goal (replaces the current one).
 
-### Plan
+### Setting a New Goal
 
-A full view of the 18-week marathon training programme. Each week shows:
+Click **🎯 Set New Goal** on the Overview page. A 4-step wizard guides you through:
 
-- Week label and dates
-- Total weekly volume (km)
-- Individual sessions (day number, title, pace/detail)
+1. **Goal Name & Date** — e.g. "London Marathon" on "2027-04-25". This populates the countdown timer.
+2. **Target Time** — e.g. "3:30:00". Populates the Target Goal Time card.
+3. **Training Paces** — Add rows with run type and pace. Pre-filled with common types (Recovery, Easy, Long Run, Marathon Pace, Tempo, Intervals). Add or remove as needed.
+4. **Select Plan** — Choose which training plan to link to the "This Week" view. Lists the default Bucharest Marathon plan plus any custom plans you've created.
 
-The current week is highlighted with a blue border and a "Current" badge.
+Setting a new goal overwrites the previous one on the Overview page.
+
+### Training Plans
+
+Navigate to the **Plan** tab to manage your training plans.
+
+**Plan Selector:** You'll see buttons for each available plan:
+- **🏃 Bucharest Marathon** — The built-in 18-week plan (always available, cannot be deleted)
+- **📋 [Your Plans]** — Any custom plans you've created
+
+**Viewing a Plan:**
+- Click any plan button to view its contents
+- Use **← Back to Plans** to return to the selector
+
+**Creating a New Plan:**
+1. Click **+ Create New Plan**
+2. Enter a plan name (e.g. "Berlin Marathon 2027")
+3. Type or paste your plan in the free text area in any format you like
+4. Click **Save Plan**
+
+Your new plan appears as a button on the plan selector and becomes available in the "Set New Goal" wizard.
+
+**Editing a Plan:**
+- Open the plan, then click **✏️ Edit**
+- Modify the name or content, then click **Update Plan**
+
+**Deleting a Plan:**
+- Open the plan, then click **🗑️ Delete**
+- Confirm the deletion (cannot be undone)
 
 ### Log Run
 
@@ -78,7 +108,6 @@ Charts update automatically as you log more runs.
 Shows at-a-glance info:
 
 - **Sessions This Month** — Count of strength sessions logged in the current month.
-- **Goal** — Current strength goal (45KG Dumbbell Press, target May 2027).
 - **Exercise Lists** — Three cards (Push, Pull, Legs) showing every exercise with the heaviest weight and sets/reps you've ever recorded for it. Shows "—" if no data yet.
 
 ### Log Session
@@ -123,7 +152,7 @@ Your data is stored in your browser's local storage, which means it doesn't auto
 
 1. Go to the home screen (the mode selection screen).
 2. Click **⬇ Export Data**.
-3. A JSON file downloads named `bergin-pft-backup-YYYY-MM-DD.json` containing all your runs and strength sessions.
+3. A JSON file downloads named `bergfit-backup-YYYY-MM-DD.json` containing all your runs, strength sessions, current goal, and custom training plans.
 
 ### Importing
 
@@ -147,7 +176,8 @@ Your data is stored in your browser's local storage, which means it doesn't auto
 - **Add to Home Screen** — On mobile, use your browser's "Add to Home Screen" option to launch the app like a native app.
 - **Data is per-browser** — If you use Chrome on one device and Safari on another, they have separate storage even on the same device.
 - **No internet required** — Once loaded, the app works fully offline (except for the initial page load from GitHub Pages).
-- **Back button** — The **← Bergin PFT** text in the navigation bar takes you back to mode selection from either Running or Strength mode.
+- **Back button** — The **← Bergfit** text in the navigation bar takes you back to mode selection from either Running or Strength mode.
+- **Custom plans persist** — Your custom plans are saved in localStorage and included in exports, so they transfer between devices.
 
 ---
 

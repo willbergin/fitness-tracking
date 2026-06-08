@@ -1,20 +1,21 @@
-# Bergin PFT
+# Bergfit
 
-A personal fitness tracker built with vanilla HTML, CSS, and JavaScript. Designed for marathon training and strength training — no frameworks, no build tools, just open `index.html` in a browser.
+A personal hybrid fitness tracker built with vanilla HTML, CSS, and JavaScript. Designed for goal-based running training and strength training — no frameworks, no build tools, just open `index.html` in a browser.
 
 ## What It Does
 
-Bergin PFT is a two-mode training companion:
+Bergfit is a two-mode training companion:
 
-- **Running Mode** — Built around an 18-week Bucharest Marathon training plan (target: 3:45:00). Log runs, view a calendar, track weekly mileage and pace trends, and count down to race day.
+- **Running Mode** — Set any running goal (race, time trial, etc.), create custom training plans, log runs, view a calendar, and track weekly mileage and pace trends.
 - **Strength Mode** — Track Push/Pull/Legs sessions. Log exercises with weight and sets/reps, view progress over time with per-exercise weight charts.
 
-Both modes store data in `localStorage`, so everything persists between sessions on the same device.
+Both modes store data in `localStorage`, so everything persists between sessions on the same device. Use the Export/Import feature to sync between devices.
 
 ## Key Features
 
-- Race countdown timer (days, hours, minutes, seconds to Bucharest Marathon)
-- Full 18-week training plan with weekly structure and target paces
+- **Dynamic goal system** — Set any upcoming goal with a target time, custom paces, and linked training plan
+- Race/goal countdown timer (days, hours, minutes, seconds)
+- **Multiple training plans** — Default Bucharest Marathon plan plus create/edit/delete your own custom plans via free text input
 - Run logging with type, distance, pace, and notes
 - Monthly calendar view with click-to-inspect day detail
 - Weekly mileage and average pace charts (canvas-based, no libraries)
@@ -27,17 +28,20 @@ Both modes store data in `localStorage`, so everything persists between sessions
 
 ```
 fitness-tracking/
-├── index.html    # Main entry point — open this in your browser
-├── styles.css    # All styling (CSS custom properties, flexbox/grid layout)
-├── app.js        # Application logic (mode selection, running, strength)
-├── data.js       # Training plan data and exercise definitions
-└── README.md     # This file
+├── PROJECT-FILES/
+│   ├── index.html    # Main app entry point
+│   ├── styles.css    # All styling (CSS custom properties, flexbox/grid layout)
+│   ├── app.js        # Application logic (mode selection, running, strength)
+│   └── data.js       # Training plan data and exercise definitions
+├── index.html        # Redirect to PROJECT-FILES/index.html (for GitHub Pages)
+├── README.md         # This file
+└── USER-GUIDE.md     # Full user documentation
 ```
 
 ## How to Run
 
 1. Clone or download the repo
-2. Open `index.html` in any modern browser (double-click or drag into browser)
+2. Open `PROJECT-FILES/index.html` in any modern browser (double-click or drag into browser)
 3. That's it — no server, no installs, no build step
 
 Or visit the live version via GitHub Pages:
@@ -51,6 +55,8 @@ Data lives in your browser's `localStorage` (per device). To sync:
 2. Transfer the file (OneDrive, email, AirDrop, etc.)
 3. On device B: click **⬆ Import Data** and select the file
 4. Choose to **merge** (keep data from both devices) or **replace** (overwrite)
+
+Exported data includes runs, strength sessions, your current goal, and any custom training plans.
 
 ## Tech Stack
 
