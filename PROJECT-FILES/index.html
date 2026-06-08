@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bergin PFT</title>
+    <title>Bergfit</title>
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -11,8 +11,8 @@
     <!-- Mode Selection Screen -->
     <div id="mode-select" class="mode-select">
         <div class="mode-select-inner">
-            <h1 class="mode-select-title">Bergin PFT</h1>
-            <p class="mode-select-subtitle">Select your training mode</p>
+            <h1 class="mode-select-title">Bergfit</h1>
+            <p class="mode-select-subtitle">Personal hybrid fitness tracker — select your training mode</p>
             <div class="mode-cards">
                 <div class="mode-card" id="mode-running">
                     <div class="mode-card-icon">🏃</div>
@@ -20,7 +20,7 @@
                     <div class="mode-card-desc">Marathon training, log runs, calendar &amp; stats</div>
                 </div>
                 <div class="mode-card" id="mode-strength">
-                    <div class="mode-card-icon">�️</div>
+                    <div class="mode-card-icon">🏋️</div>
                     <div class="mode-card-label">Strength</div>
                     <div class="mode-card-desc">Push, Pull, Legs — log sessions &amp; track progress</div>
                 </div>
@@ -41,7 +41,7 @@
          ============================================================ -->
     <div id="running-app" class="app-container" style="display:none;">
         <nav class="nav">
-            <span class="nav-logo" id="running-back-btn">← Bergin PFT</span>
+            <span class="nav-logo" id="running-back-btn">← Bergfit</span>
             <ul class="nav-links">
                 <li><a class="nav-link active" data-view="r-overview">Overview</a></li>
                 <li><a class="nav-link" data-view="r-plan">Plan</a></li>
@@ -58,7 +58,8 @@
                 <p class="page-subtitle"></p>
                 <div class="dashboard-grid">
                     <div class="card">
-                        <div class="card-title"><svg width="24" height="16" viewBox="0 0 24 16" style="vertical-align:middle;margin-right:6px;border-radius:2px;"><rect x="0" y="0" width="8" height="16" fill="#002B7F"/><rect x="8" y="0" width="8" height="16" fill="#FCD116"/><rect x="16" y="0" width="8" height="16" fill="#CE1126"/></svg>Upcoming Race — Bucharest Marathon, 11th October 2026</div>
+                        <div class="card-title" id="goal-race-title">Upcoming Goal</div>
+                        <div id="goal-race-subtitle" style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px;"></div>
                         <div class="countdown-grid">
                             <div class="countdown-item">
                                 <span class="countdown-number" id="countdown-days">—</span>
@@ -80,17 +81,22 @@
                     </div>
                     <div class="card">
                         <div class="card-title">Target Goal Time</div>
-                        <div class="goal-time">3:45:00</div>
-                        <div class="goal-pace">Pace: 5:20–5:25/km</div>
+                        <div class="goal-time" id="goal-target-time">3:45:00</div>
+                        <div class="goal-pace" id="goal-target-pace">Pace: 5:20–5:25/km</div>
                     </div>
                     <div class="card">
-                        <div class="card-title">Training Paces</div>
+                        <div class="card-title">Goal Training Paces</div>
                         <div id="paces-content"></div>
                     </div>
                     <div class="card">
-                        <div class="card-title">This Week</div>
+                        <div class="card-title">Goal Plan — This Week</div>
                         <div id="this-week-content"></div>
                     </div>
+                </div>
+                <!-- Set New Goal -->
+                <div class="card" style="margin-top:24px;border:2px dashed var(--border-color);text-align:center;padding:32px;">
+                    <div style="font-size:14px;color:var(--text-muted);margin-bottom:12px;">Want to train for something new?</div>
+                    <button class="btn btn-primary" id="btn-set-new-goal">🎯 Set New Goal</button>
                 </div>
             </section>
 
@@ -202,7 +208,7 @@
          ============================================================ -->
     <div id="strength-app" class="app-container" style="display:none;">
         <nav class="nav">
-            <span class="nav-logo" id="strength-back-btn">← Bergin PFT</span>
+            <span class="nav-logo" id="strength-back-btn">← Bergfit</span>
             <ul class="nav-links">
                 <li><a class="nav-link active" data-view="s-overview">Overview</a></li>
                 <li><a class="nav-link" data-view="s-log">Log Session</a></li>
@@ -323,6 +329,17 @@
                 <div id="s-stats-legs"></div>
             </section>
         </main>
+    </div>
+
+    <!-- Set Goal Modal -->
+    <div class="modal-overlay" id="goal-modal">
+        <div class="modal" style="max-width:550px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="goal-modal-title">Set New Goal</h2>
+                <button class="btn btn-secondary btn-sm" id="goal-modal-close">&times;</button>
+            </div>
+            <div id="goal-modal-body"></div>
+        </div>
     </div>
 
     <!-- Toast -->

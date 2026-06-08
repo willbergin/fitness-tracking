@@ -22,13 +22,14 @@
     var payload = {
       exportedAt: new Date().toISOString(),
       runs: getStore(RUN_STORAGE_KEY),
-      strength: getStore(STRENGTH_STORAGE_KEY)
+      strength: getStore(STRENGTH_STORAGE_KEY),
+      goal: (function() { try { var g = localStorage.getItem('pft_running_goal'); return g ? JSON.parse(g) : null; } catch(e) { return null; } })()
     };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'bergin-pft-backup-' + todayStr() + '.json';
+    a.download = 'bergfit-backup-' + todayStr() + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -64,11 +65,13 @@
           existingStrength.forEach(function (s) { sIds[s.id] = true; });
           (data.strength || []).forEach(function (s) { if (!sIds[s.id]) existingStrength.push(s); });
           setStore(STRENGTH_STORAGE_KEY, existingStrength);
+          if (data.goal) localStorage.setItem('pft_running_goal', JSON.stringify(data.goal));
           showToast('Data merged successfully!');
         } else {
           // Replace
           setStore(RUN_STORAGE_KEY, data.runs || []);
           setStore(STRENGTH_STORAGE_KEY, data.strength || []);
+          if (data.goal) localStorage.setItem('pft_running_goal', JSON.stringify(data.goal));
           showToast('Data imported successfully!');
         }
       } catch (err) {
@@ -139,7 +142,7 @@
   var runningInitialized = false;
 
   function initRunning() {
-    if (runningInitialized) return;
+    if (runningInitialized) { renderGoalOverview(); return; }
     runningInitialized = true;
 
     // Navigation
@@ -169,9 +172,33 @@
     // Make showRunView accessible for calendar modal
     window._showRunView = showRunView;
 
+    /* ===== Goal System ===== */
+    var GOAL_STORAGE_KEY = 'pft_running_goal';
+
+    function getGoal() {
+      try {
+        var raw = localStorage.getItem(GOAL_STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      // Default goal from data.js
+      return {
+        raceName: MARATHON_CONFIG.raceName,
+        raceDate: MARATHON_CONFIG.raceDate,
+        targetTime: MARATHON_CONFIG.targetTime,
+        paces: TRAINING_PACES,
+        planIndex: 0
+      };
+    }
+
+    function saveGoal(goal) {
+      localStorage.setItem(GOAL_STORAGE_KEY, JSON.stringify(goal));
+    }
+
     /* Countdown */
+    var countdownInterval;
     function updateCountdown() {
-      var raceDate = new Date(MARATHON_CONFIG.raceDate + 'T09:00:00');
+      var goal = getGoal();
+      var raceDate = new Date(goal.raceDate + 'T09:00:00');
       var now = new Date();
       var diff = raceDate.getTime() - now.getTime();
       if (diff <= 0) {
@@ -186,28 +213,66 @@
       document.getElementById('countdown-minutes').textContent = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       document.getElementById('countdown-seconds').textContent = Math.floor((diff % (1000 * 60)) / 1000);
     }
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+
+    function renderGoalOverview() {
+      var goal = getGoal();
+
+      // Upcoming Goal title and subtitle
+      var subtitle = document.getElementById('goal-race-subtitle');
+      subtitle.textContent = goal.raceName + ' — ' + formatDate(goal.raceDate);
+
+      // Target time
+      document.getElementById('goal-target-time').textContent = goal.targetTime || '—';
+      document.getElementById('goal-target-pace').textContent = '';
+
+      // Countdown
+      updateCountdown();
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(updateCountdown, 1000);
+
+      // Paces
+      renderPaces(goal.paces || TRAINING_PACES);
+
+      // This Week from selected plan
+      renderThisWeek(goal.planIndex || 0);
+    }
+
+    function renderPaces(paces) {
+      var container = document.getElementById('paces-content');
+      if (!container) return;
+      container.innerHTML = '';
+      var table = document.createElement('table');
+      table.className = 'paces-table';
+      table.innerHTML = '<thead><tr><th>Run Type</th><th>Pace</th></tr></thead>';
+      var tbody = document.createElement('tbody');
+      paces.forEach(function (p) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + p.type + '</td><td>' + p.pace + '</td>';
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
 
     /* Current Week */
-    function getCurrentWeek() {
+    function getCurrentWeek(planIndex) {
+      var plan = (typeof TRAINING_PLANS !== 'undefined' && TRAINING_PLANS[planIndex]) ? TRAINING_PLANS[planIndex] : TRAINING_PLAN;
       var today = new Date(); today.setHours(0,0,0,0);
-      for (var i = 0; i < TRAINING_PLAN.length; i++) {
-        var week = TRAINING_PLAN[i];
+      for (var i = 0; i < plan.length; i++) {
+        var week = plan[i];
         var start = new Date(week.startDate + 'T00:00:00');
         var end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
         if (today >= start && today <= end) return week;
       }
-      var planStart = new Date(TRAINING_PLAN[0].startDate + 'T00:00:00');
-      if (today < planStart) return TRAINING_PLAN[0];
-      return TRAINING_PLAN[TRAINING_PLAN.length - 1];
+      var planStart = new Date(plan[0].startDate + 'T00:00:00');
+      if (today < planStart) return plan[0];
+      return plan[plan.length - 1];
     }
 
-    /* This Week */
-    (function renderThisWeek() {
+    function renderThisWeek(planIndex) {
       var container = document.getElementById('this-week-content');
       if (!container) return;
-      var currentWeek = getCurrentWeek();
+      var currentWeek = getCurrentWeek(planIndex);
       container.innerHTML = '';
       var weekHeader = document.createElement('div');
       weekHeader.className = 'this-week-header';
@@ -222,30 +287,137 @@
         daysList.appendChild(dayCard);
       });
       container.appendChild(daysList);
-    })();
+    }
 
-    /* Paces */
-    (function renderPaces() {
-      var container = document.getElementById('paces-content');
-      if (!container) return;
-      var table = document.createElement('table');
-      table.className = 'paces-table';
-      table.innerHTML = '<thead><tr><th>Run Type</th><th>Pace</th></tr></thead>';
-      var tbody = document.createElement('tbody');
-      TRAINING_PACES.forEach(function (p) {
-        var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + p.type + '</td><td>' + p.pace + '</td>';
-        tbody.appendChild(tr);
+    // Initial render
+    renderGoalOverview();
+
+    /* ===== Set New Goal Modal ===== */
+    document.getElementById('btn-set-new-goal').addEventListener('click', function () {
+      showGoalStep1();
+    });
+
+    document.getElementById('goal-modal-close').addEventListener('click', function () {
+      document.getElementById('goal-modal').classList.remove('active');
+    });
+    document.getElementById('goal-modal').addEventListener('click', function (e) {
+      if (e.target === this) this.classList.remove('active');
+    });
+
+    var newGoalData = {};
+
+    function showGoalStep1() {
+      newGoalData = {};
+      var modal = document.getElementById('goal-modal');
+      var title = document.getElementById('goal-modal-title');
+      var body = document.getElementById('goal-modal-body');
+      title.textContent = 'Step 1 — Upcoming Goal';
+      body.innerHTML =
+        '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">What are you training for?</p>' +
+        '<div class="form-group"><label class="form-label">Race / Goal Name *</label><input class="form-input" id="goal-input-name" placeholder="e.g. London Marathon"></div>' +
+        '<div class="form-group"><label class="form-label">Date *</label><input class="form-input" type="date" id="goal-input-date"></div>' +
+        '<div class="form-group"><button class="btn btn-primary" id="goal-step1-next">Next →</button></div>';
+      modal.classList.add('active');
+      document.getElementById('goal-step1-next').addEventListener('click', function () {
+        var name = document.getElementById('goal-input-name').value.trim();
+        var date = document.getElementById('goal-input-date').value;
+        if (!name || !date) { showToast('Please fill in both fields'); return; }
+        newGoalData.raceName = name;
+        newGoalData.raceDate = date;
+        showGoalStep2();
       });
-      table.appendChild(tbody);
-      container.appendChild(table);
-    })();
+    }
+
+    function showGoalStep2() {
+      var body = document.getElementById('goal-modal-body');
+      var title = document.getElementById('goal-modal-title');
+      title.textContent = 'Step 2 — Target Time';
+      body.innerHTML =
+        '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">What\'s your target finish time?</p>' +
+        '<div class="form-group"><label class="form-label">Target Time *</label><input class="form-input" id="goal-input-time" placeholder="e.g. 3:45:00"></div>' +
+        '<div class="form-group"><button class="btn btn-primary" id="goal-step2-next">Next →</button></div>';
+      document.getElementById('goal-step2-next').addEventListener('click', function () {
+        var time = document.getElementById('goal-input-time').value.trim();
+        if (!time) { showToast('Please enter a target time'); return; }
+        newGoalData.targetTime = time;
+        showGoalStep3();
+      });
+    }
+
+    function showGoalStep3() {
+      var body = document.getElementById('goal-modal-body');
+      var title = document.getElementById('goal-modal-title');
+      title.textContent = 'Step 3 — Training Paces';
+      body.innerHTML =
+        '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">Enter your training paces. Add as many as you need.</p>' +
+        '<div id="goal-paces-list"></div>' +
+        '<button type="button" class="btn btn-secondary btn-sm" id="goal-add-pace" style="margin-bottom:16px;">+ Add Pace</button>' +
+        '<div class="form-group"><button class="btn btn-primary" id="goal-step3-next">Next →</button></div>';
+
+      var pacesList = document.getElementById('goal-paces-list');
+      function addPaceRow(type, pace) {
+        var row = document.createElement('div');
+        row.className = 'form-row';
+        row.style.marginBottom = '8px';
+        row.innerHTML = '<input class="form-input goal-pace-type" placeholder="Run Type" value="' + (type || '') + '">' +
+          '<input class="form-input goal-pace-value" placeholder="e.g. 5:20/km" value="' + (pace || '') + '">';
+        pacesList.appendChild(row);
+      }
+      // Pre-fill with common types
+      addPaceRow('Recovery', '');
+      addPaceRow('Easy', '');
+      addPaceRow('Long Run', '');
+      addPaceRow('Marathon Pace', '');
+      addPaceRow('Tempo', '');
+      addPaceRow('Intervals', '');
+
+      document.getElementById('goal-add-pace').addEventListener('click', function () { addPaceRow('', ''); });
+
+      document.getElementById('goal-step3-next').addEventListener('click', function () {
+        var types = document.querySelectorAll('.goal-pace-type');
+        var values = document.querySelectorAll('.goal-pace-value');
+        var paces = [];
+        for (var i = 0; i < types.length; i++) {
+          var t = types[i].value.trim();
+          var v = values[i].value.trim();
+          if (t && v) paces.push({ type: t, pace: v });
+        }
+        if (paces.length === 0) { showToast('Please enter at least one pace'); return; }
+        newGoalData.paces = paces;
+        showGoalStep4();
+      });
+    }
+
+    function showGoalStep4() {
+      var body = document.getElementById('goal-modal-body');
+      var title = document.getElementById('goal-modal-title');
+      title.textContent = 'Step 4 — Select Training Plan';
+      var planOptions = '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">Choose a plan for your "This Week" view.</p>';
+      planOptions += '<div class="form-group"><select class="form-input" id="goal-plan-select">';
+      planOptions += '<option value="0">Default Plan (18-week Bucharest)</option>';
+      if (typeof TRAINING_PLANS !== 'undefined') {
+        for (var i = 0; i < TRAINING_PLANS.length; i++) {
+          planOptions += '<option value="' + i + '">Plan ' + (i + 1) + '</option>';
+        }
+      }
+      planOptions += '</select></div>';
+      planOptions += '<div class="form-group"><button class="btn btn-primary" id="goal-step4-save">🎯 Save Goal</button></div>';
+      body.innerHTML = planOptions;
+
+      document.getElementById('goal-step4-save').addEventListener('click', function () {
+        newGoalData.planIndex = parseInt(document.getElementById('goal-plan-select').value) || 0;
+        saveGoal(newGoalData);
+        document.getElementById('goal-modal').classList.remove('active');
+        renderGoalOverview();
+        showToast('New goal saved!');
+      });
+    }
 
     /* Plan */
     (function renderPlan() {
       var container = document.getElementById('plan-content');
       if (!container) return;
-      var currentWeek = getCurrentWeek();
+      var currentWeek = getCurrentWeek(0);
       TRAINING_PLAN.forEach(function (week) {
         var isCurrent = week.week === currentWeek.week;
         var weekBlock = document.createElement('div');
