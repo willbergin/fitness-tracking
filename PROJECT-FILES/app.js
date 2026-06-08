@@ -467,11 +467,13 @@
       var planContent = document.getElementById('plan-content');
       var planSelector = document.getElementById('plan-selector');
       var backBtn = document.getElementById('btn-back-to-plans');
+      var createForm = document.getElementById('create-plan-form');
 
       planContent.innerHTML = '';
       planContent.style.display = 'block';
       planSelector.style.display = 'none';
       backBtn.style.display = 'inline-flex';
+      createForm.style.display = 'none';
 
       if (planId === 'default') {
         var currentWeek = getCurrentWeek(0);
@@ -498,10 +500,18 @@
         var customPlans = getCustomPlans();
         var plan = customPlans[idx];
         if (!plan) return;
-        var header = document.createElement('h2');
-        header.className = 'section-heading';
-        header.textContent = plan.name;
-        planContent.appendChild(header);
+
+        // Plan header with edit/delete actions
+        var actionsBar = document.createElement('div');
+        actionsBar.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;';
+        actionsBar.innerHTML =
+          '<h2 class="section-heading" style="margin:0;">' + plan.name + '</h2>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<button class="btn btn-secondary btn-sm" id="btn-edit-plan-' + idx + '">✏️ Edit</button>' +
+            '<button class="btn btn-danger btn-sm" id="btn-delete-plan-' + idx + '">🗑️ Delete</button>' +
+          '</div>';
+        planContent.appendChild(actionsBar);
+
         var pre = document.createElement('div');
         pre.className = 'card';
         pre.style.whiteSpace = 'pre-wrap';
@@ -511,6 +521,41 @@
         pre.style.color = 'var(--text-secondary)';
         pre.textContent = plan.text;
         planContent.appendChild(pre);
+
+        // Edit handler
+        document.getElementById('btn-edit-plan-' + idx).addEventListener('click', function () {
+          planContent.style.display = 'none';
+          backBtn.style.display = 'none';
+          createForm.style.display = 'block';
+          document.getElementById('new-plan-name').value = plan.name;
+          document.getElementById('new-plan-text').value = plan.text;
+          // Override save to update instead of create
+          var saveBtn = document.getElementById('btn-save-new-plan');
+          var newSaveBtn = saveBtn.cloneNode(true);
+          newSaveBtn.textContent = 'Update Plan';
+          saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+          newSaveBtn.addEventListener('click', function () {
+            var name = document.getElementById('new-plan-name').value.trim();
+            var text = document.getElementById('new-plan-text').value.trim();
+            if (!name || !text) { showToast('Please enter a name and plan details'); return; }
+            var plans = getCustomPlans();
+            plans[idx] = { name: name, text: text, createdAt: plan.createdAt, updatedAt: new Date().toISOString() };
+            saveCustomPlans(plans);
+            showToast('Plan updated!');
+            renderPlanSelector();
+          });
+        });
+
+        // Delete handler
+        document.getElementById('btn-delete-plan-' + idx).addEventListener('click', function () {
+          if (confirm('Delete "' + plan.name + '"? This cannot be undone.')) {
+            var plans = getCustomPlans();
+            plans.splice(idx, 1);
+            saveCustomPlans(plans);
+            showToast('Plan deleted');
+            renderPlanSelector();
+          }
+        });
       }
     }
 
